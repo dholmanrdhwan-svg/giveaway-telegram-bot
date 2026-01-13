@@ -1,0 +1,38 @@
+```yaml
+services:
+  - type: web
+    name: giveaway-telegram-bot
+    env: python
+    region: frankfurt
+    plan: free
+    branch: main
+    
+    buildCommand: |
+      pip install -r requirements.txt
+    
+    startCommand: |
+      gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
+    
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: giveaway_db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PORT
+        value: 10000
+      - key: USE_WEBHOOK
+        value: "true"
+    
+    healthCheckPath: /health
+    autoDeploy: true
+
+databases:
+  - name: giveaway_db
+    plan: free
+    databaseName: giveaway
+    user: giveaway_user
+```
