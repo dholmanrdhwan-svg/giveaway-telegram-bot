@@ -19,6 +19,26 @@ def home():
     return jsonify({
         "status": "active",
         "service": "Telegram Giveaway Bot",
+import os
+import logging
+from flask import Flask, request, jsonify
+from datetime import datetime
+
+app = Flask(__name__)
+
+# إعداد التسجيل
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+# مسار الصفحة الرئيسية
+@app.route('/')
+def home():
+    return jsonify({
+        "status": "active",
+        "service": "Telegram Giveaway Bot",
         "timestamp": datetime.now().isoformat(),
         "message": "✅ البوت يعمل بنجاح!"
     })
@@ -47,4 +67,3 @@ def telegram_webhook(token):
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 10000))
     app.run(host='0.0.0.0', port=port, debug=False)
-```
