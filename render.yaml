@@ -1,6 +1,8 @@
 ```yaml
 services:
   - type: web
+services:
+  - type: web
     name: giveaway-telegram-bot
     env: python
     region: frankfurt
@@ -35,4 +37,3 @@ databases:
     plan: free
     databaseName: giveaway
     user: giveaway_user
-```
