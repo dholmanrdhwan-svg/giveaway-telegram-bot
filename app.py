@@ -132,7 +132,23 @@ def admin_panel_web():
                             html += `<li>${g.title} (${g.participants}/${g.winners} participants)</li>`;
                         });
                         html += '</ul></div>';
-                    }
+                    }# أضف في نهاية app.py
+import threading
+import subprocess
+import sys
+
+def run_bot():
+    """تشغيل البوت في خيط منفصل"""
+    try:
+        print("🚀 بدء تشغيل البوت...")
+        subprocess.run([sys.executable, "bot.py"])
+    except Exception as e:
+        print(f"❌ خطأ في البوت: {e}")
+
+# بدء البوت في خيط منفصل
+if os.environ.get('RUN_BOT', 'true').lower() == 'true':
+    bot_thread = threading.Thread(target=run_bot, daemon=True)
+    bot_thread.start()
                     
                     document.getElementById('liveStats').innerHTML = html;
                 } catch (error) {
