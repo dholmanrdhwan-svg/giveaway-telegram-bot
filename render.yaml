@@ -1,5 +1,5 @@
 services:
-  # خدمة البوت (Worker)
+  # خدمة البوت (Worker) - تشغيل البوت الرئيسي
   - type: worker
     name: giveaway-telegram-bot
     env: python
@@ -8,26 +8,21 @@ services:
     envVars:
       - key: TELEGRAM_BOT_TOKEN
         sync: false
+        value: your_bot_token_here
       - key: ADMIN_IDS
         sync: false
-      - key: DATABASE_URL
-        fromDatabase:
-          name: giveaway-db
-          property: connectionString
+        value: "123456789"  # ضع معرفك هنا
 
-  # خدمة الويب (اختياري)
+  # خدمة الويب - لوحة التحكم
   - type: web
     name: giveaway-web-dashboard
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: python app.py
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: giveaway-db
-          property: connectionString
-
-databases:
-  - name: giveaway-db
-    databaseName: giveaway
-    user: giveaway_user
+      - key: PORT
+        value: 10000
+      - key: SECRET_KEY
+        generateValue: true
+    healthCheckPath: /health
+    autoDeploy: true
