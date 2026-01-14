@@ -8,10 +8,10 @@ services:
     envVars:
       - key: TELEGRAM_BOT_TOKEN
         sync: false
-        value: your_bot_token_here
+        value: 8345394791:AAHd9lAOu21QKOnj5l_70QUEl8nDhUgmlMc
       - key: ADMIN_IDS
         sync: false
-        value: "123456789"  # ضع معرفك هنا
+        value: "8345394791"  # ضع معرفك هنا
 
   # خدمة الويب - لوحة التحكم
   - type: web
