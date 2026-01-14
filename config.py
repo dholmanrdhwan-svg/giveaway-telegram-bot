@@ -2,20 +2,23 @@
 إعدادات وتكوين البوت
 """
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # توكن البوت
-BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-if not BOT_TOKEN:
-    raise ValueError("❌ يرجى تعيين TELEGRAM_BOT_TOKEN في ملف .env")
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+if not TELEGRAM_BOT_TOKEN:
+    print("⚠️ تحذير: TELEGRAM_BOT_TOKEN غير معين")
 
 # معرف المطور
-ADMIN_IDS = [int(x.strip()) for x in os.getenv('ADMIN_IDS', '').split(',') if x.strip()]
+ADMIN_IDS = []
+admin_ids_str = os.environ.get('ADMIN_IDS', '')
+if admin_ids_str:
+    try:
+        ADMIN_IDS = [int(x.strip()) for x in admin_ids_str.split(',') if x.strip()]
+    except ValueError:
+        print(f"⚠️ تحذير: ADMIN_IDS غير صالحة: {admin_ids_str}")
 
 # إعدادات قاعدة البيانات
-DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///giveaway.db')
+DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///giveaway.db')
 
 # إعدادات التطبيق
 BOT_USERNAME = None  # سيتم تعبئته تلقائياً
@@ -25,14 +28,19 @@ MAX_WINNERS = 100
 MIN_DURATION_MINUTES = 1
 MAX_DURATION_DAYS = 30
 
+# متغيرات تخزين مؤقتة (تستخدم في handlers)
+active_giveaways = []
+temp_giveaway_data = {}
+
 # نصوغ رسائل البوت
 MESSAGES = {
     'welcome': "🎉 أهلاً بك في بوت السحوبات!\n\n"
                "استخدم الأوامر التالية:\n"
                "/start - بدء الاستخدام\n"
-               "/newgiveaway - إنشاء سحب جديد\n"
+               "/newgiveaway - إنشاء سحب جديد (للمشرفين)\n"
                "/giveaways - عرض السحوبات النشطة\n"
-               "/help - المساعدة",
+               "/help - المساعدة\n"
+               "/myid - عرض معرفك",
     
     'admin_welcome': "🛠 لوحة تحكم الأدمن\n\n"
                     "/broadcast - إرسال رسالة للجميع\n"
