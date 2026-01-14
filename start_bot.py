@@ -1,28 +1,4 @@
-import logging
-import time
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
+# start_bot.py
 def main():
-    logger.info("Bot starting...")
-    
-    # محاكاة عمل البوت فقط
-    try:
-        while True:
-            logger.info("Bot is running in simulation mode")
-            time.sleep(60)
-    except KeyboardInterrupt:
-        logger.info("Bot stopped")
-    
+    print("Bot is disabled for now")
     return True
-
-if __name__ == "__main__":
-    main()            return True
-            
-    except Exception as e:
-        logger.error(f"❌ خطأ في تشغيل البوت: {e}")
-        return False
-
-if __name__ == "__main__":
-    main()
