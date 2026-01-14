@@ -1,23 +1,21 @@
 """
 Handlers للسحوبات
 """
-import json
 from datetime import datetime, timedelta
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ConversationHandler
-import config
+from config import MESSAGES, ADMIN_IDS, MAX_WINNERS, active_giveaways, temp_giveaway_data
+import random
 
-# تخزين مؤقت للبيانات (يمكن استبداله بقاعدة بيانات)
-temp_giveaway_data = {}
-active_giveaways = []
-participants = {}
+# متغيرات المحادثة
+GIVEAWAY_TITLE, GIVEAWAY_DESC, GIVEAWAY_WINNERS, GIVEAWAY_DURATION = range(4)
 
 async def start_giveaway(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """بدء إنشاء سحب جديد"""
     user_id = update.effective_user.id
     
     # التحقق إذا كان المستخدم أدمن
-    if user_id not in config.ADMIN_IDS:
+    if user_id not in ADMIN_IDS:
         await update.message.reply_text("⚠️ هذا الأمر للمشرفين فقط!")
         return ConversationHandler.END
     
@@ -26,7 +24,7 @@ async def start_giveaway(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         "أرسل عنوان الجائزة (مثال: هاتف iPhone 14):"
     )
     
-    return config.GIVEAWAY_TITLE
+    return GIVEAWAY_TITLE
 
 async def process_giveaway_title(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """معالجة عنوان السحب"""
@@ -44,7 +42,7 @@ async def process_giveaway_title(update: Update, context: ContextTypes.DEFAULT_T
         "(مثال: هاتف iPhone 14 Pro Max 256GB جديد بالكامل)"
     )
     
-    return config.GIVEAWAY_DESC
+    return GIVEAWAY_DESC
 
 async def process_giveaway_description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """معالجة وصف السحب"""
@@ -55,10 +53,10 @@ async def process_giveaway_description(update: Update, context: ContextTypes.DEF
     
     await update.message.reply_text(
         "👥 **كم عدد الفائزين؟**\n"
-        "(أدخل رقماً من 1 إلى 100):"
+        f"(أدخل رقماً من 1 إلى {MAX_WINNERS}):"
     )
     
-    return config.GIVEAWAY_WINNERS
+    return GIVEAWAY_WINNERS
 
 async def process_giveaway_winners(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """معالجة عدد الفائزين"""
@@ -66,12 +64,12 @@ async def process_giveaway_winners(update: Update, context: ContextTypes.DEFAULT
         winners = int(update.message.text)
         user_id = update.effective_user.id
         
-        if winners < 1 or winners > config.MAX_WINNERS:
+        if winners < 1 or winners > MAX_WINNERS:
             await update.message.reply_text(
-                f"⚠️ الرقم يجب أن يكون بين 1 و {config.MAX_WINNERS}.\n"
+                f"⚠️ الرقم يجب أن يكون بين 1 و {MAX_WINNERS}.\n"
                 "أعد إدخال عدد الفائزين:"
             )
-            return config.GIVEAWAY_WINNERS
+            return GIVEAWAY_WINNERS
         
         temp_giveaway_data[user_id]['winners'] = winners
         
@@ -80,11 +78,11 @@ async def process_giveaway_winners(update: Update, context: ContextTypes.DEFAULT
             "(أدخل رقماً، مثال: 24 لـ 24 ساعة):"
         )
         
-        return config.GIVEAWAY_DURATION
+        return GIVEAWAY_DURATION
         
     except ValueError:
         await update.message.reply_text("⚠️ يرجى إدخال رقم صحيح. أعد المحاولة:")
-        return config.GIVEAWAY_WINNERS
+        return GIVEAWAY_WINNERS
 
 async def process_giveaway_duration(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """معالجة مدة السحب وإنشاؤه"""
@@ -94,7 +92,7 @@ async def process_giveaway_duration(update: Update, context: ContextTypes.DEFAUL
         
         if duration_hours < 1:
             await update.message.reply_text("⚠️ المدة يجب أن تكون ساعة على الأقل. أعد المحاولة:")
-            return config.GIVEAWAY_DURATION
+            return GIVEAWAY_DURATION
         
         # جمع بيانات السحب
         giveaway = temp_giveaway_data[user_id]
@@ -105,6 +103,8 @@ async def process_giveaway_duration(update: Update, context: ContextTypes.DEFAUL
         giveaway['ends_at'] = datetime.now() + timedelta(hours=duration_hours)
         giveaway['id'] = len(active_giveaways) + 1
         giveaway['participants'] = []
+        giveaway['winners_selected'] = False
+        giveaway['winners_list'] = []
         
         # حفظ السحب في القائمة النشطة
         active_giveaways.append(giveaway)
@@ -133,7 +133,7 @@ async def process_giveaway_duration(update: Update, context: ContextTypes.DEFAUL
         await update.message.reply_text(giveaway_msg, reply_markup=reply_markup, parse_mode='Markdown')
         
         # إرسال رسالة نجاح للمنشئ
-        success_msg = config.MESSAGES['giveaway_created'].format(
+        success_msg = MESSAGES['giveaway_created'].format(
             title=giveaway['title'],
             description=giveaway['description'],
             winners=giveaway['winners'],
@@ -145,7 +145,7 @@ async def process_giveaway_duration(update: Update, context: ContextTypes.DEFAUL
         
     except ValueError:
         await update.message.reply_text("⚠️ يرجى إدخال رقم صحيح. أعد المحاولة:")
-        return config.GIVEAWAY_DURATION
+        return GIVEAWAY_DURATION
 
 async def join_giveaway(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """معالجة انضمام المستخدم للسحب"""
@@ -197,13 +197,17 @@ async def join_giveaway(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 async def list_giveaways(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """عرض السحوبات النشطة"""
     if not active_giveaways:
-        await update.message.reply_text(config.MESSAGES['no_active_giveaways'])
+        await update.message.reply_text(MESSAGES['no_active_giveaways'])
         return
     
     message = "🎰 **السحوبات النشطة:**\n\n"
     
     for idx, giveaway in enumerate(active_giveaways, 1):
         time_left = giveaway['ends_at'] - datetime.now()
+        
+        if time_left.total_seconds() <= 0:
+            continue  # تخطي السحوبات المنتهية
+        
         hours_left = int(time_left.total_seconds() // 3600)
         minutes_left = int((time_left.total_seconds() % 3600) // 60)
         
@@ -214,9 +218,11 @@ async def list_giveaways(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             f"   🆔 الرقم: {giveaway['id']}\n\n"
         )
     
-    message += "\nللانضمام للسحب، اضغط على زر 'انضم للسحب' في رسالة السحب."
-    
-    await update.message.reply_text(message, parse_mode='Markdown')
+    if message == "🎰 **السحوبات النشطة:**\n\n":
+        await update.message.reply_text("📭 لا توجد سحوبات نشطة حالياً.")
+    else:
+        message += "\nللانضمام للسحب، اضغط على زر 'انضم للسحب' في رسالة السحب."
+        await update.message.reply_text(message, parse_mode='Markdown')
 
 async def cancel_giveaway(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """إلغاء إنشاء السحب"""
