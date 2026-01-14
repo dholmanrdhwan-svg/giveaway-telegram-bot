@@ -8,7 +8,7 @@ services:
     envVars:
       - key: TELEGRAM_BOT_TOKEN
         sync: false
-        value: 8345394791:AAHd9lAOu21QKOnj5l_70QUEl8nDhUgmlMc
+        value: "8345394791:AAHd9lAOu21QKOnj5l_70QUEl8nDhUgmlMc"
       - key: ADMIN_IDS
         sync: false
         value: "8345394791"  # ضع معرفك هنا
