@@ -1,12 +1,21 @@
-# start_bot.py
-import os
-import sys
+import logging
+import time
 
-# تأكد من أن المسار الحالي مضاف
-sys.path.append('.')
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-from telegram_bot import main
+def main():
+    """
+    الدالة الرئيسية للبوت
+    """
+    logger.info("🎮 بدء تشغيل بوت الجيف أواي...")
+    
+    # محاكاة عمل البوت
+    while True:
+        logger.info("🤖 البوت يعمل...")
+        time.sleep(60)  # انتظر دقيقة بين كل عملية
+    
+    return True
 
 if __name__ == "__main__":
-    print("🚀 بدء تشغيل بوت السحوبات...")
     main()
