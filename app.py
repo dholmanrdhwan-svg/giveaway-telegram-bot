@@ -1,40 +1,23 @@
 import os
-import threading
 from flask import Flask, jsonify
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 PORT = int(os.environ.get('PORT', 5000))
 
-# متغيرات البوت
-bot_running = False
-bot_thread = None
-
-def run_bot():
-    global bot_running
-    try:
-        logger.info("Starting bot...")
-        bot_running = True
-        
-        # استيراد البوت
-        try:
-            from start_bot import main
-            main()
-        except ImportError:
-            logger.info("Using simulation mode")
-            while bot_running:
-                logger.info("Bot simulation running...")
-                time.sleep(60)
-                
-    except Exception as e:
-        logger.error(f"Bot error: {e}")
-    finally:
-        bot_running = False
-
 @app.route('/')
+def home():
+    return jsonify({
+        'status': 'success',
+        'message': 'Application is running',
+        'port': PORT
+    })
+
+@app.route('/health')
+def health():
+    return jsonify({'status': 'healthy'})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=PORT, debug=False)eapp.route('/')
 def home():
     return jsonify({
         "status": "online",
