@@ -1,34 +1,29 @@
+# config.py
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 class Config:
-    # إعدادات البوت
-    BOT_TOKEN = os.getenv('BOT_TOKEN')
-    
-    # إعدادات قاعدة البيانات
-    DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///giveaway.db')
-    
-    # إعدادات الويب هوك
-    USE_WEBHOOK = os.getenv('USE_WEBHOOK', 'true').lower() == 'true'
-    WEBHOOK_URL = os.getenv('WEBHOOK_URL', '')
+    # الإعدادات الأساسية
+    BOT_TOKEN = os.getenv('BOT_TOKEN', '')
+    SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
+    DATABASE_URL = os.getenv('DATABASE_URL', '')
     PORT = int(os.getenv('PORT', 10000))
     
-    # القنوات الإلزامية
-    MANDATORY_CHANNELS = [
-        {
-            'username': '@YourChannel',
-            'title': 'القناة الرسمية',
-            'id': -1001234567890
-        }
-    ]
+    # إعدادات الأمان
+    MAX_ENTRIES_PER_USER = 50
+    MAX_GIVEAWAYS_PER_DAY = 5
+    REQUEST_TIMEOUT = 30
     
-    # رسائل البوت
+    # رسائل البوت (نصوص عربية)
     MESSAGES = {
-        'welcome': "🎉 مرحباً بك في بوت السحوبات!",
-        'help': "🆘 للمساعدة اضغط /help",
-        'error': "❌ حدث خطأ، حاول لاحقاً"
+        'welcome': "🎉 أهلاً بك في بوت السحوبات!",
+        'help': "🆘 للمساعدة، ارسل /help",
+        'error': "❌ حدث خطأ، يرجى المحاولة لاحقاً"
+    }
+    
+    # المنتجات (للنجوم)
+    PRODUCTS = {
+        'comment': {'stars': 20, 'name': 'تعليق على منشور'},
+        'boost': {'stars': 50, 'name': 'تعزيز القناة'}
     }
 
 config = Config()
