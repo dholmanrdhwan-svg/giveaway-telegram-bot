@@ -1,40 +1,33 @@
-"""
-Flask Application for Render Deployment
-"""
-
 import os
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask import Flask, jsonify
 
-# Initialize Flask app
 app = Flask(__name__)
-CORS(app)
 
-# Get port from environment variable (Render provides this)
+# الحصول على المنفذ من متغير البيئة
 PORT = int(os.environ.get('PORT', 5000))
-
-# ============ ROUTES ============
 
 @app.route('/')
 def home():
-    """Home endpoint"""
     return jsonify({
-        'status': 'active',
-        'message': 'Flask app is running on Render',
+        'status': 'success',
+        'message': 'Application is running',
         'port': PORT
     })
 
 @app.route('/health')
-def health_check():
-    """Health check endpoint for Render"""
-    return jsonify({'status': 'healthy'}), 200
+def health():
+    return jsonify({'status': 'healthy'})
 
-@app.route('/api/test', methods=['GET'])
-def test_endpoint():
-    """Test API endpoint"""
-    return jsonify({
-        'message': 'API is working',
-        'method': request.method
+@app.route('/api/data')
+def get_data():
+    return jsonify({'data': [1, 2, 3, 4, 5]})
+
+if __name__ == '__main__':
+    app.run(
+        host='0.0.0.0',
+        port=PORT,
+        debug=False
+    )        'method': request.method
     })
 
 # ============ ERROR HANDLERS ============
