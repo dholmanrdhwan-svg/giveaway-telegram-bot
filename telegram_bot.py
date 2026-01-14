@@ -1,6 +1,8 @@
 # telegram_bot.py - المحدث
 import os
 import logging
+from config import config
+print(f"✅ التوكن: {config.BOT_TOKEN[:10]}...")
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, ConversationHandler, MessageHandler, filters
 from telegram.constants import ParseMode
