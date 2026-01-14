@@ -1,40 +1,74 @@
 import os
-import sys
 import threading
-import signal
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
 import logging
 
-# إعداد التسجيل
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-
-# الحصول على المنفذ من متغير البيئة
 PORT = int(os.environ.get('PORT', 5000))
 
 # متغيرات البوت
-bot_thread = None
-bot_instance = None
 bot_running = False
-
-# ============ إدارة البوت ============
+bot_thread = None
 
 def run_bot():
-    """
-    تشغيل البوت في خيط منفصل
-    """
-    global bot_instance, bot_running
-    
+    global bot_running
     try:
-        logger.info("جاري تشغيل البوت...")
+        logger.info("Starting bot...")
+        bot_running = True
         
-        # استيراد وبدء البوت (اضبط بناءً على ملفاتك)
+        # استيراد البوت
         try:
-            # جرب استيراد من telegram_bot.py أولاً
-            from telegram_bot import main as bot_main
-            logger.info("تم تحميل البوت من telegram_bot.py")
+            from start_bot import main
+            main()
+        except ImportError:
+            logger.info("Using simulation mode")
+            while bot_running:
+                logger.info("Bot simulation running...")
+                time.sleep(60)
+                
+    except Exception as e:
+        logger.error(f"Bot error: {e}")
+    finally:
+        bot_running = False
+
+@app.route('/')
+def home():
+    return jsonify({
+        "status": "online",
+        "bot": bot_running
+    })
+
+@app.route('/health')
+def health():
+    return jsonify({"status": "healthy"})
+
+@app.route('/bot/start', methods=['POST'])
+def start_bot():
+    global bot_thread, bot_running
+    
+    if bot_running:
+        return jsonify({"error": "Bot already running"}), 400
+    
+    bot_thread = threading.Thread(target=run_bot, daemon=True)
+    bot_thread.start()
+    
+    return jsonify({"message": "Bot started"})
+
+@app.route('/bot/stop', methods=['POST'])
+def stop_bot():
+    global bot_running
+    bot_running = False
+    return jsonify({"message": "Bot stopped"})
+
+@app.route('/bot/status')
+def bot_status():
+    return jsonify({"running": bot_running})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=PORT, debug=False)            logger.info("تم تحميل البوت من telegram_bot.py")
         except ImportError:
             try:
                 # جرب bot.py إذا telegram_bot.py غير موجود
